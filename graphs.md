@@ -170,6 +170,15 @@ Suppose you have a *connected undirected graph*, a spanning tree is:
   - A subset of edges that connects all vertices without creating cycles 
     - It "spans" all vertices.
     - It is a tree (connected + acyclic)
+    - A spanning tree being a tree in our specific case guarantees that entry and exit
+      will be connected by one path and one path only
+    -> In a connected acyclic graph (a tree applies), there is exactly one simple path
+       between any two vertices
+      - Proof by contradiction:
+        - suppose there were two different paths between A and B.
+        - combining them forms a cycle
+        - but trees have no cycle (or a connected acyclic graph has no cycle)
+        -> Contradiction
 
 **! Key property**
 If a graph has n vertices:
@@ -179,5 +188,64 @@ If a graph has n vertices:
 Since all spanning trees have exactly the same "edge" cost of n-1 w/ n the # of vertices of the graph:
   - A minimum spanning tree is the spanning tree whose total edge weight is the smallest.
     - Obviously this can be identified only on weighted graphs
+
+
+=> Wilson's algorithm to generate spanning trees (perfect mazes)
+
+```pseudo
+function wilson(grid):
+
+    for each cell in grid:
+        in_tree[cell] = false
+
+    # Choose an arbitrary root
+    root = random_cell(grid)
+    in_tree[root] = true
+
+    # While there are cells not yet in the tree
+    while exists cell s.t. in_tree[cell] == false:
+
+        start = random cell where in_tree[start] == false
+
+        path = loop_erased_random_walk(start, in_tree)
+
+        # Add path to the tree
+        for i from 0 to path.length - 2:
+            a = path[i]
+            b = path[i+1]
+
+            remove_wall(a, b)
+            in_tree[a] = true
+
+        in_tree[path.last] = true
+
+
+function loop_erased_random_walk(start, in_tree):
+    current = start
+    parth = empty list
+    visited_index = empty map # cell -> index in path
+
+    while in_tree[current] == false:
+        if current in visited_index:
+            # LOOP DETECTED
+            loop_start_index = visited_index[current]
+
+            # erase everything after that index
+            path = path[0 : loop_start_index + 1]
+
+            # rebuild visited_index accordingly
+            rebuild visited_index from path
+        else:
+            visited_index[current] = path.length
+            append current to path
+        # step randomly
+        next = random choice among neighbors(current)
+        current = next
+
+    # when we hit tree, append final cell
+    append current to path
+
+    return path
+```
 
 
