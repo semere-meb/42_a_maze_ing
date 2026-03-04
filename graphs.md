@@ -222,7 +222,7 @@ function wilson(grid):
 
 function loop_erased_random_walk(start, in_tree):
     current = start
-    parth = empty list
+    path = empty list
     visited_index = empty map # cell -> index in path
 
     while in_tree[current] == false:
@@ -236,6 +236,7 @@ function loop_erased_random_walk(start, in_tree):
             # rebuild visited_index accordingly
             rebuild visited_index from path
         else:
+            # index of the cell within the path
             visited_index[current] = path.length
             append current to path
         # step randomly

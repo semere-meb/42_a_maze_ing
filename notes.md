@@ -4,3 +4,5 @@ To represent the adjacency list ->
 }
 
 dict[tuple, List[tuple]]
+
+To represent our grid ->
