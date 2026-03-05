@@ -19,9 +19,9 @@ clean:
 	rm -rf $(VENV)
 
 lint: $(VENV)
-	uv run ruff check .
-	uv run flake8 .
-	uv run mypy . \
+	uv run ruff check src
+	uv run flake8 src
+	uv run mypy src \
 	--warn-return-any \
 	--warn-unused-ignores \
 	--ignore-missing-imports \
@@ -29,9 +29,9 @@ lint: $(VENV)
 	--check-untyped-defs
 
 lint-strict: $(VENV)
-	uv run ruff check .
-	uv run flake8 .
-	uv run mypy . --strict
+	uv run ruff check src
+	uv run flake8 src
+	uv run mypy src --strict
 
 format:
 	uv run ruff format src
