@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Maze generation, solving and displaying project"
 readme = "README.md"
 requires-python = ">=3.10"
+
 dependencies = [
     "mlx",
 ]
@@ -18,6 +19,3 @@ dev = [
     "pytest>=9.0.2",
     "ruff>=0.15.4",
 ]
-
-[project.scripts]
-maze = "myproject.main:main"

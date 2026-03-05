@@ -19,6 +19,7 @@ clean:
 	rm -rf $(VENV)
 
 lint: $(VENV)
+	uv run ruff check .
 	uv run flake8 .
 	uv run mypy . \
 	--warn-return-any \
@@ -28,8 +29,12 @@ lint: $(VENV)
 	--check-untyped-defs
 
 lint-strict: $(VENV)
+	uv run ruff check .
 	uv run flake8 .
 	uv run mypy . --strict
+
+format:
+	uv run ruff format src
 
 debug: $(VENV)
 	uv run python -m pdb src/main.py
