@@ -4,8 +4,7 @@ VENV = .venv
 install: $(VENV)
 
 $(VENV): pyproject.toml uv.lock
-	pip install uv
-	uv python install 3.10
+	pipx install uv
 	uv venv --python 3.10
 	uv sync
 
@@ -17,7 +16,7 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	rm -rf .mypy__
 	rm -rf build/
-	rm -rf .venv
+	rm -rf $(VENV)
 
 lint: $(VENV)
 	uv run flake8 .
@@ -36,7 +35,7 @@ debug: $(VENV)
 	uv run python -m pdb src/main.py
 
 reset-env:
-	rm -rf .venv
+	rm -rf $(VENV)
 	$(MAKE) install
 
 re: clean install
