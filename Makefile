@@ -1,9 +1,15 @@
-install:
+VENV = .venv
+
+
+install: $(VENV)
+
+$(VENV): pyproject.toml uv.lock
+	pip install uv
+	uv python install 3.10
 	uv venv --python 3.10
 	uv sync
 
-run: install
-	pip install uv
+run: $(VENV)
 	uv run python src/main.py
 
 clean:
@@ -13,26 +19,25 @@ clean:
 	rm -rf build/
 	rm -rf .venv
 
-lint:
+lint: $(VENV)
 	uv run flake8 .
-	uv run mypy . --warn-return-any \
+	uv run mypy . \
+	--warn-return-any \
 	--warn-unused-ignores \
 	--ignore-missing-imports \
 	--disallow-untyped-defs \
 	--check-untyped-defs
 
-lint-strict:
+lint-strict: $(VENV)
 	uv run flake8 .
 	uv run mypy . --strict
 
-debug:
+debug: $(VENV)
 	uv run python -m pdb src/main.py
 
 reset-env:
 	rm -rf .venv
-	pip install uv
-	uv venv --python 3.10
-	uv sync
+	$(MAKE) install
 
 re: clean install
 

@@ -1,9 +1,8 @@
-from test import greet
+import mlx
 
 
 def main():
-    greet()
-    
+    print(mlx.__file__)    
 
 if __name__ == "__main__":
     main()
