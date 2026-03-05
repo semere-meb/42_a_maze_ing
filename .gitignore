@@ -1,2 +1,7 @@
 *.pdf
 *.txt
+
+# python/uv artifacts
+.venv/
+__pycache__/
+*.pyc

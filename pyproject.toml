@@ -1,0 +1,23 @@
+[project]
+name = "a-maze-ing"
+version = "0.1.0"
+description = "Maze generation, solving and displaying project"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mlx",
+]
+
+[tool.uv.sources]
+mlx = { path = "dist/mlx-2.2-py3-none-any.whl" }
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "ruff>=0.15.4",
+]
+
+[project.scripts]
+maze = "myproject.main:main"

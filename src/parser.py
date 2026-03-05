@@ -48,7 +48,7 @@ def validate_config(config: dict) -> dict | None:
         print(e)
     return None
 
-def main() -> None:
+def parse() -> None:
     config = parse_config("config.txt")
     for k, v in config.items():
         print(f"{k}={v}")
@@ -59,4 +59,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parse()
