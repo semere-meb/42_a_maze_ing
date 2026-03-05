@@ -1,5 +1,7 @@
 VENV = .venv
 
+run: install
+	uv run python src/main.py
 
 install: $(VENV)
 
@@ -8,14 +10,10 @@ $(VENV): pyproject.toml uv.lock
 	uv venv --python 3.10
 	uv sync
 
-run: $(VENV)
-	uv run python src/main.py
-
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	rm -rf .mypy__
-	rm -rf build/
+	rm -rf .mypy_cache
+	rm -rf .ruff_cache
 	rm -rf $(VENV)
 
 lint: $(VENV)
