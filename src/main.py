@@ -82,7 +82,7 @@ class Cell:
         y = self.column * self.width
         wall_size = self.width//20
 
-        self.fill and put_box(data_addr, line_len, bpp, x+wall_size, y+wall_size, self.width-2*wall_size, self.height-2*wall_size, BLACK) # inner
+        self.fill and put_box(data_addr, line_len, bpp, x+wall_size, y+wall_size, self.width-2*wall_size, self.height-2*wall_size, GREEN) # inner
 
         self.west and put_box(data_addr, line_len, bpp, x, y, wall_size, self.height, BLUE) # west
         self.east and put_box(data_addr, line_len, bpp, x+self.width-wall_size, y, wall_size, self.height, BLUE) # east
@@ -91,11 +91,39 @@ class Cell:
         self.south and put_box(data_addr, line_len, bpp, x, y+self.height-wall_size, self.width, wall_size, BLUE) # south
 
 
+def draw_pattern(cells: list, width: int, height: int):
+    x = (width - 7)//2
+    y = (height - 5)//2
+
+    # 4
+    cells[x+0][y+0].fill = False
+    cells[x+0][y+1].fill = False
+    cells[x+0][y+2].fill = False
+    cells[x+1][y+2].fill = False
+    cells[x+2][y+2].fill = False
+    cells[x+2][y+2].fill = False
+    cells[x+2][y+3].fill = False
+    cells[x+2][y+4].fill = False
+
+    # 2
+    cells[x+4][y+0].fill = False
+    cells[x+5][y+0].fill = False
+    cells[x+6][y+0].fill = False
+    cells[x+6][y+1].fill = False
+    cells[x+6][y+2].fill = False
+    cells[x+5][y+2].fill = False
+    cells[x+4][y+2].fill = False
+    cells[x+4][y+3].fill = False
+    cells[x+4][y+4].fill = False
+    cells[x+5][y+4].fill = False
+    cells[x+6][y+4].fill = False
+    
+
 def main():
     WIDTH = 800
     HEIGHT = 800
 
-    config = Config(16, 16, [0, 0], [0, 0], "output.txt", True)
+    config = Config(20, 20, [0, 0], [0, 0], "output.txt", True)
     config.cell_width = WIDTH//config.width
     config.cell_height = HEIGHT//config.height
     config.fill_color = BLACK
@@ -115,9 +143,15 @@ def main():
         curr_row = []
         for column in range(config.width):
             cell = Cell(m, mlx_ptr, win_ptr, config.cell_width, config.cell_height, row, column)
-            cell.render(data_addr, line_len, bpp)
+            # cell.render(data_addr, line_len, bpp)
             curr_row.append(cell)
         cells.append(curr_row)
+
+    draw_pattern(cells, config.width, config.height)
+
+    for row in range(config.height):
+        for column in range(config.width):
+            cells[row][column].render(data_addr, line_len, bpp)
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 0, 0)
     m.mlx_key_hook(win_ptr, on_keypress, None)
