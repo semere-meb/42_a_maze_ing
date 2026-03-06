@@ -33,66 +33,57 @@ def on_close(param):
 class Cell:
     width: int
     height: int
-    fill_color: int
-    west: int
-    south: int
-    east: int
-    north: int
 
     def __init__(self, m, mlx_ptr, win_ptr, width, height, row, column) -> None:
         self.m = m
         self.mlx_ptr = mlx_ptr
         self.win_ptr = win_ptr
 
+        self.width = width
+        self.height = height
+
         self.row = row
         self.column = column
 
-        self.width = width
-        self.height = height
-        self.fill_color = blue
-        self.west = red
-        self.west = red
-        self.west = red
-        self.west = red
-        self.render()
 
-    def render(self) -> None:
-        self.img_ptr = self.m.mlx_new_image(self.mlx_ptr, 800, 800)
-        data_addr, bpp, line_len, endian = self.m.mlx_get_data_addr(self.img_ptr)
+    def render(self, data_addr, line_len, bpp) -> None:
+        x = self.row * self.height
+        y = self.column * self.width
+        wall_size = self.width//20
 
-        # inner
-        put_box( data_addr, line_len, bpp, 200 * self.row + 0, self.column * 200 + 0, 200, 200, red, )
+        put_box(data_addr, line_len, bpp, x+wall_size, y+wall_size, self.width-2*wall_size, self.height-2*wall_size, 0x000000) # inner
 
-        # west
-        put_box( data_addr, line_len, bpp, 200 * self.row + 0, self.column * 200 + 0, 0 + 20, 200, blue, )
+        put_box(data_addr, line_len, bpp, x, y, wall_size, self.height, blue) # west
+        put_box(data_addr, line_len, bpp, x+self.width-wall_size, y, wall_size, self.height, blue) # east
 
-        # east
-        put_box( data_addr, line_len, bpp, 200 * self.row + 200 - 20, self.column * 200 + 0, 0 + 20, 200, blue, )
-
-        # north
-        put_box( data_addr, line_len, bpp, 200 * self.row + 0 + 20, self.column * 200 + 0, 200 - 2 * 20, 0 + 20, blue, )
-
-        # wouth
-        put_box( data_addr, line_len, bpp, 200 * self.row + 20, self.column * 200 + 200 - 20, 200 - 2 * 20, 0 + 20, blue, )
-
-        self.m.mlx_put_image_to_window(self.mlx_ptr, self.win_ptr, self.img_ptr, 0, 0)
+        put_box(data_addr, line_len, bpp, x+wall_size, y, self.width-2*wall_size, wall_size, blue) # north
+        put_box(data_addr, line_len, bpp, x+wall_size, y+self.height-wall_size, self.width-2*wall_size, wall_size, blue) # south
 
 
 def main():
     WIDTH = 800
     HEIGHT = 800
 
+    columns = 32
+    rows = 32
+
     m = mlx.Mlx()
     mlx_ptr = m.mlx_init()
     win_ptr = m.mlx_new_window(mlx_ptr, WIDTH, HEIGHT, "a-maze-ing")
 
-    cells = []
-    for row in range(4):
-        curr_row = []
-        for column in range(4):
-            curr_row.append(Cell(m, mlx_ptr, win_ptr, 200, 200, row, column))
-        cells.append(row)
+    img_ptr = m.mlx_new_image(mlx_ptr, 800, 800)
+    data_addr, bpp, line_len, endian = m.mlx_get_data_addr(img_ptr)
 
+    cells = []
+    for row in range(rows):
+        curr_row = []
+        for column in range(columns):
+            cell = Cell(m, mlx_ptr, win_ptr, HEIGHT//rows, WIDTH//columns, row, column)
+            cell.render(data_addr, line_len, bpp)
+            curr_row.append(cell)
+        cells.append(curr_row)
+
+    m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 0, 0)
     m.mlx_key_hook(win_ptr, on_keypress, None)
     m.mlx_loop(mlx_ptr)
 
