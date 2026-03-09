@@ -140,7 +140,8 @@ class Grid:
         e: bool
         s: bool
         w: bool
-        pi: "Cell"
+        fill: bool
+        pattern: bool
 
         def __init__(self, pos: tuple[int], n: bool, e: bool, s: bool, w: bool) -> None:
             self.pos = pos
@@ -148,10 +149,11 @@ class Grid:
             self.e = e
             self.s = s
             self.w = w
+            self.fill = False
+            self.logo = False
 
         def __hash__(self):
             return hash(self.pos)
-
 
 
 def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
@@ -172,25 +174,59 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
     path = []
     curr = exit
     while curr:
-        print("RAN")
         path.append(curr)
         curr = parent[curr]
     path.reverse()
     return path    
         
+def get_pattern_set(height: int, width: int) -> set[tuple]:
+    pattern = set()
+    if height < 9 || width < 7:
+        return pattern
+    top_left = (height / 2 - 2, width / 2 - 2)
+    # four
+    pattern.add(top_left)
+    pattern.add((top_left[0] + 1, top_left[1]))
+    pattern.add((top_left[0] + 2, top_left[1]))
+    pattern.add((top_left[0] + 2, top_left[1] + 1))
+    pattern.add((top_left[0] + 2, top_left[1] + 2))
+    pattern.add((top_left[0] + 3, top_left[1] + 2))
+    pattern.add((top_left[0] + 4, top_left[1] + 2))
+
+    # two
+    pattern.add((top_left[0], top_left[1] + 4))
+    pattern.add((top_left[0], top_left[1] + 5))
+    pattern.add((top_left[0], top_left[1] + 6))
+    pattern.add((top_left[0] + 1, top_left[1] + 6))
+    pattern.add((top_left[0] + 2, top_left[1] + 6))
+    pattern.add((top_left[0] + 2, top_left[1] + 5))
+    pattern.add((top_left[0] + 2, top_left[1] + 4))
+    pattern.add((top_left[0] + 3, top_left[1] + 4))
+    pattern.add((top_left[0] + 4, top_left[1] + 4))
+    pattern.add((top_left[0] + 4, top_left[1] + 5))
+    pattern.add((top_left[0] + 4, top_left[1] + 6))
+    
+
 def generate_grid(height: int, width: int) -> Grid:
     out = []
+    pattern_set = get_pattern_set(height, width)
     for i in range(height):
         sub = []
         for j in range(width):
-            sub.append(Grid.Cell((i,j), True, True, True, True))
+            cell = Grid.Cell((i, j), True, True, True, True)
+            if (i, j) in pattern_set:
+                cell.pattern = True
+            sub.append(cell)
         out.append(sub)
     return Grid(out, height, width)
 
 def wilson_generate(grid: Grid, root: tuple, height: int, width: int) -> None:
     in_tree = {}
     for cell in [c for row in grid.adj for c in row]:
-        in_tree[cell.pos] = False
+        if cell.pattern:
+            in_tree[cell.pos] = True
+        else:
+            in_tree[cell.pos] = False
 
     in_tree[root] = True    
 
@@ -262,9 +298,9 @@ def loop_erased_random_walk(start: tuple[int], in_tree: dict, grid: Grid) -> Lis
     return path
 
 def main():
-    grid = generate_grid(5, 5)
+    grid = generate_grid(5, 15)
 
-    wilson_generate(grid, (0,0), 5, 5)
+    wilson_generate(grid, (0,0), 5, 15)
     for sub in grid.adj:
         for cell in sub:
             print(cell.pos, (cell.n, cell.e, cell.s, cell.w), sep='->')
