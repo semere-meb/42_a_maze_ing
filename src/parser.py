@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 def parse_config(url_path: str) -> dict:
     config = {}
     try:
@@ -7,7 +8,7 @@ def parse_config(url_path: str) -> dict:
             for line in f:
                 sep = line.find("=")
                 key = line[:sep].lower().strip()
-                val = line[sep + 1:].strip()
+                val = line[sep + 1 :].strip()
                 config[key] = val
         print(f"config is of {type(config)}")
         return config
@@ -17,15 +18,9 @@ def parse_config(url_path: str) -> dict:
         f.close()
     return
 
+
 def validate_config(config: dict) -> dict | None:
-    keys = [
-        "width",
-        "height",
-        "entry",
-        "exit",
-        "output_file",
-        "perfect"
-    ]
+    keys = ["width", "height", "entry", "exit", "output_file", "perfect"]
     validated = {}
     try:
         for k in keys:
@@ -35,8 +30,8 @@ def validate_config(config: dict) -> dict | None:
             if k == "width" or k == "height":
                 validated[k] = int(val)
             if k == "entry" or k == "exit":
-                sep = val.find(',')
-                coord = (int(val[:sep]), int(val[sep+1:]))
+                sep = val.find(",")
+                coord = (int(val[:sep]), int(val[sep + 1 :]))
                 validated[k] = coord
             if k == "output_file":
                 validated[k] = val
@@ -47,6 +42,7 @@ def validate_config(config: dict) -> dict | None:
     except Exception as e:
         print(e)
     return None
+
 
 def parse() -> None:
     config = parse_config("config.txt")
