@@ -1,5 +1,6 @@
 import os
 
+import time
 import mlx
 import generator as gen
 
@@ -93,12 +94,16 @@ def main():
         ps,
     )
     gen.wilson_generate(grid, (0, 0), config.height, config.width, ps)
+    path = gen.bfs(grid, grid.adj[0][0], grid.adj[24][24])
+    for cell in path:
+        print(cell.pos)
 
     cells = grid.adj
 
     for row in cells:
         for cell in row:
             cell.render(data_addr, line_len, bpp)
+
 
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 10, GREEN, "MENU")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 30, GREEN, "1. Regenerate")

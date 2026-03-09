@@ -102,6 +102,7 @@ class Grid:
             self.w = w
             self.fill = False
             self.pattern = False
+            self.path = False
 
         def render(self, data_addr, line_len, bpp) -> None:
             row, column = self.pos
@@ -122,11 +123,15 @@ class Grid:
                 y + wall_size,
                 self.width - 2 * wall_size,
                 self.height - 2 * wall_size,
-                BLACK,
+                BLACK if not self.path else WHITE,
             )  # inner
 
             self.w and put_box(
-                data_addr, line_len, bpp, x, y, wall_size, self.height, BLUE
+                data_addr, line_len, bpp, x, y, wall_size, self.height, RED
+            )  # west
+            
+            not self.w and self.path and put_box(
+                data_addr, line_len, bpp, x, y, wall_size, self.height, WHITE
             )  # west
             self.e and put_box(
                 data_addr,
@@ -136,12 +141,26 @@ class Grid:
                 y,
                 wall_size,
                 self.height,
-                BLUE,
+                RED,
+            )  # east
+            not self.e and self.path and put_box(
+                data_addr,
+                line_len,
+                bpp,
+                x + self.width - wall_size,
+                y,
+                wall_size,
+                self.height,
+                WHITE,
             )  # east
 
             self.n and put_box(
-                data_addr, line_len, bpp, x, y, self.width, wall_size, BLUE
+                data_addr, line_len, bpp, x, y, self.width, wall_size, RED
             )  # north
+            not self.n and self.path and put_box(
+                data_addr, line_len, bpp, x, y, self.width, wall_size, WHITE
+            )  # north
+
             self.s and put_box(
                 data_addr,
                 line_len,
@@ -150,7 +169,17 @@ class Grid:
                 y + self.height - wall_size,
                 self.width,
                 wall_size,
-                BLUE,
+                RED,
+            )  # south
+            not self.s and self.path and put_box(
+                data_addr,
+                line_len,
+                bpp,
+                x,
+                y + self.height - wall_size,
+                self.width,
+                wall_size,
+                WHITE,
             )  # south
 
             def __hash__(self):
@@ -175,6 +204,7 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
     path = []
     curr = exit
     while curr:
+        curr.path = True
         path.append(curr)
         curr = parent[curr]
     path.reverse()
