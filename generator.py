@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from typing import List
+from collections import defaultdict, deque
+import time
 import random
 
 class Grid:
@@ -8,13 +10,31 @@ class Grid:
     num_cells: int
     height: int
     width: int
+    maze: bool
+    adj_list: dict[List["Cell"]]
 
     def __init__(self, adj: List[List["Cell"]], height: int, width: int) -> None:
         self.adj = adj
         self.num_cells = height * width
         self.width = width
         self.height = height
+        self.maze = False
 
+    def generate_adj_list(self) -> dict[List["Cell"]]:
+        adj_list = defaultdict(list)
+        for row in self.adj:
+            for c in row:
+                if not c.n:
+                    adj_list[c].append(self.adj[c.pos[0] - 1][c.pos[1]])
+                if not c.e:
+                    adj_list[c].append(self.adj[c.pos[0]][c.pos[1] + 1])
+                if not c.s:
+                    adj_list[c].append(self.adj[c.pos[0] + 1][c.pos[1]])
+                if not c.w:
+                    adj_list[c].append(self.adj[c.pos[0]][c.pos[1] - 1])
+        self.adj_list = adj_list
+        return adj_list
+                    
     def display(self) -> None:
         """
         Renders the maze using Unicode box-drawing characters.
@@ -120,6 +140,7 @@ class Grid:
         e: bool
         s: bool
         w: bool
+        pi: "Cell"
 
         def __init__(self, pos: tuple[int], n: bool, e: bool, s: bool, w: bool) -> None:
             self.pos = pos
@@ -128,8 +149,35 @@ class Grid:
             self.s = s
             self.w = w
 
-           
+        def __hash__(self):
+            return hash(self.pos)
 
+
+
+def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
+    adj_list = grid.generate_adj_list()
+    q = deque([entry])
+    visited = set([entry])
+    parent = {entry: None}
+
+    while len(q):
+        curr = q.popleft()
+
+        if curr == exit:
+            break
+        for neighbor in adj_list[curr]:
+            if neighbor not in parent.keys():
+                parent[neighbor] = curr
+                q.append(neighbor)
+    path = []
+    curr = exit
+    while curr:
+        print("RAN")
+        path.append(curr)
+        curr = parent[curr]
+    path.reverse()
+    return path    
+        
 def generate_grid(height: int, width: int) -> Grid:
     out = []
     for i in range(height):
@@ -158,6 +206,7 @@ def wilson_generate(grid: Grid, root: tuple, height: int, width: int) -> None:
             in_tree[a] = True
 
         in_tree[path[-1]] = True
+    grid.maze = True
 
 def remove_wall(a: tuple[int], b: tuple[int], grid: Grid) -> None:
     r, c = a[0] - b[0], a[1] - b[1]
@@ -210,23 +259,25 @@ def loop_erased_random_walk(start: tuple[int], in_tree: dict, grid: Grid) -> Lis
         current = next
 
     path.append(current)
-    print("LERW RAN")
     return path
 
 def main():
-    grid = generate_grid(15,45)
-    for sub in grid.adj:
-        for cell in sub:
-            print(cell.pos, (cell.n, cell.e, cell.s, cell.w), sep='->')
-        print("")
+    grid = generate_grid(5, 5)
 
-    wilson_generate(grid, (0,0), 15, 45)
+    wilson_generate(grid, (0,0), 5, 5)
     for sub in grid.adj:
         for cell in sub:
             print(cell.pos, (cell.n, cell.e, cell.s, cell.w), sep='->')
         print("")
 
     grid.display()
+
+    adj_list = grid.generate_adj_list()
+    path = bfs(grid, grid.adj[0][0], grid.adj[4][4])
+    print("AFTER BFS")
+    for i in path:
+        print(i.pos, end=" ")
+    print("")
 
 if __name__ == "__main__":
     main()
