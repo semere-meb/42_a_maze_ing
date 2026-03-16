@@ -2,6 +2,8 @@ import os
 
 import mlx
 import generator as gen
+from utils import write_to_file
+from parser import Config, get_config
 
 WHITE = 0xFFFFFF
 BLACK = 0x000000
@@ -32,40 +34,14 @@ def on_keypress(keycode, param):
 def on_close(param):
     exit(0)
 
-
-class Config:
-    width: int
-    height: int
-    entry: list
-    exit: list
-    output_file: str
-    perfect: bool
-
-    fill_color: int
-    border_color: int
-
-    def __init__(
-        self,
-        width: int,
-        height: int,
-        entry: list,
-        exit: list,
-        output_file: str,
-        perfect: bool,
-    ) -> None:
-        self.width = width
-        self.height = height
-        self.entry = entry
-        self.exit = exit
-        self.output_file = output_file
-        self.perfect = perfect
-
-
 def main():
     WIDTH = 800
     HEIGHT = 800
 
-    config = Config(25, 25, [0, 0], [0, 0], "output.txt", True)
+    config = get_config("config.txt")
+    if config is None:
+        print("ERROR: Error while parsing config file")
+        return
     config.cell_width = WIDTH // config.width
     config.cell_height = HEIGHT // config.height
     config.fill_color = BLACK
@@ -73,6 +49,8 @@ def main():
     config.path_color = RED
     config.patter_color = GREEN
     config.menu_color = GREEN
+    entry = config.entry
+    exit = config.exit
 
     m = mlx.Mlx()
     mlx_ptr = m.mlx_init()
@@ -92,13 +70,19 @@ def main():
         config.cell_width,
         ps,
     )
-    gen.wilson_generate(grid, (0, 0), config.height, config.width, ps)
+    gen.wilson_generate(grid, entry, config.height, config.width, ps)
 
     cells = grid.adj
 
+
+
+    path = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
+    write_to_file(entry, exit, grid, path)
     for row in cells:
         for cell in row:
             cell.render(data_addr, line_len, bpp)
+
+    
 
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 10, GREEN, "MENU")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 30, GREEN, "1. Regenerate")

@@ -102,6 +102,7 @@ class Grid:
             self.w = w
             self.fill = False
             self.pattern = False
+            self.path = False
 
         def render(self, data_addr, line_len, bpp) -> None:
             row, column = self.pos
@@ -114,7 +115,7 @@ class Grid:
                 )  # inner
                 return
 
-            put_box(
+            not self.path and put_box(
                 data_addr,
                 line_len,
                 bpp,
@@ -123,6 +124,17 @@ class Grid:
                 self.width - 2 * wall_size,
                 self.height - 2 * wall_size,
                 BLACK,
+            )  # inner
+
+            self.path and put_box(
+                data_addr,
+                line_len,
+                bpp,
+                x + wall_size,
+                y + wall_size,
+                self.width - 2 * wall_size,
+                self.height - 2 * wall_size,
+                RED,
             )  # inner
 
             self.w and put_box(
@@ -175,6 +187,7 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
     path = []
     curr = exit
     while curr:
+        curr.path = True
         path.append(curr)
         curr = parent[curr]
     path.reverse()
