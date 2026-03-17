@@ -4,6 +4,7 @@ import mlx
 import generator as gen
 from utils import write_to_file
 from parser import Config, get_config
+import random
 
 WHITE = 0xFFFFFF
 BLACK = 0x000000
@@ -37,7 +38,6 @@ def on_close(param):
 def main():
     WIDTH = 800
     HEIGHT = 800
-
     config = get_config("config.txt")
     if config is None:
         print("ERROR: Error while parsing config file")
@@ -51,7 +51,8 @@ def main():
     config.menu_color = GREEN
     entry = config.entry
     exit = config.exit
-
+    seed = config.seed
+    random.seed(seed)
     m = mlx.Mlx()
     mlx_ptr = m.mlx_init()
     win_ptr = m.mlx_new_window(mlx_ptr, WIDTH + 20, HEIGHT + 130, "a-maze-ing")
@@ -72,23 +73,18 @@ def main():
     )
     gen.wilson_generate(grid, entry, config.height, config.width, ps)
 
+    if not config.perfect:
+       gen.break_perfect(grid.adj, ps, config.height)
+    
     cells = grid.adj
 
-
-
     path = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
-    write_to_file(entry, exit, grid, path)
+    write_to_file(entry, exit, grid, path, config.output_file)
     for row in cells:
         for cell in row:
             cell.render(data_addr, line_len, bpp)
-
-    
-
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 10, GREEN, "MENU")
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 30, GREEN, "1. Regenerate")
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 50, GREEN, "2. Show path")
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 70, GREEN, "3. Change color")
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 90, GREEN, "ESC. Quit")
+    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 30, GREEN, "ESC. Quit")
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 

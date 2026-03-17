@@ -37,6 +37,17 @@ def on_close(param):
     exit(0)
 
 
+def break_perfect(grid: List[List["Cell"]], ps: set[tuple], height: int):
+    for row in grid:
+        for cell in row:
+            h, w = cell.pos
+            if cell.s and (h + 1, w) not in ps and h < height - 1:
+                cell.s = False
+                cell_below = grid[h + 1][w]
+                cell_below.n = False
+                return
+    
+
 class Grid:
     adj: List[List["Cell"]]
     num_cells: int
@@ -196,9 +207,9 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
 
 def get_pattern_set(height: int, width: int) -> set[tuple]:
     pattern = set()
-    if height < 9 or width < 7:
+    if height < 6 or width < 8:
         return pattern
-    top_left = (height // 2 - 2, width // 2 - 2)
+    top_left = ((height - 5) // 2, (width - 7) // 2)
     # four
     pattern.add(top_left)
     pattern.add((top_left[0] + 1, top_left[1]))

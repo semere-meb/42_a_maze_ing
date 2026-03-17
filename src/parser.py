@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from typing import Optional
+
 class Config:
     width: int
     height: int
@@ -19,6 +21,7 @@ class Config:
         exit: tuple,
         output_file: str,
         perfect: bool,
+        seed: Optional[int] = None
     ) -> None:
         self.width = width
         self.height = height
@@ -26,6 +29,8 @@ class Config:
         self.exit = exit
         self.output_file = output_file
         self.perfect = perfect
+        self.seed = seed if seed else 42
+        
 
 def parse_config(url_path: str) -> dict:
     config = {}
@@ -36,7 +41,6 @@ def parse_config(url_path: str) -> dict:
                 key = line[:sep].lower().strip()
                 val = line[sep + 1 :].strip()
                 config[key] = val
-        print(f"config is of {type(config)}")
         f.close()
         return config
     except Exception as e:
@@ -45,25 +49,29 @@ def parse_config(url_path: str) -> dict:
 
 
 def validate_config(config: dict) -> dict | None:
-    keys = ["width", "height", "entry", "exit", "output_file", "perfect"]
+    keys = ["width", "height", "entry", "exit", "output_file", "perfect", "seed"]
     validated = {}
     try:
         for k in keys:
             val = config.get(k)
             if val is None:
+                if k == "seed":
+                    continue
                 raise KeyError(f"Mandatory config {k} not specified in config file")
             if k == "width" or k == "height":
                 validated[k] = int(val)                
             if k == "entry" or k == "exit":
                 sep = val.find(",")
-                coord = (int(val[:sep]), int(val[sep + 1 :]))
+                coord = (int(val[sep + 1 :]), int(val[:sep])) # TRY
                 validated[k] = coord
-                if coord[0] >= validated["height"] or coord[0] < 0 or coord[1] >= validated["width"] or coord[0] < 0:
+                if coord[0] >= validated["height"] or coord[0] < 0 or coord[1] >= validated["width"] or coord[1] < 0:
                     raise ValueError(f"CONFIG ERROR: {k} is outside of bounds")
             if k == "output_file":
                 validated[k] = val
             if k == "perfect":
-                validated[k] = bool(val)
+                validated[k] = True if val.lower() == "true" else False
+            if k == "seed":
+                validated[k] = int(val)
         return validated
     except Exception as e:
         print(e)
@@ -80,7 +88,8 @@ def get_config(url: str) -> Config:
         config['entry'],
         config['exit'],
         config['output_file'],
-        config['perfect']
+        config['perfect'],
+        config.get('seed')
     )
 
 

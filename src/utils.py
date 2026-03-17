@@ -53,13 +53,13 @@ def path_to_string(path: list[Grid.Cell]) -> str:
     return output + '\n'
     
 
-def write_to_file(entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell]) -> bool:
+def write_to_file(entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell], url: str) -> bool:
     output = construct_hex_string(grid)
     output += f"{entry[0]},{entry[1]}\n{exit[0]},{exit[1]}\n"
     output += path_to_string(path)
 
     try:
-        with open("maze.txt", "w") as f:
+        with open(url, "w") as f:
             f.write(output)
         return True
     except Exception as e:

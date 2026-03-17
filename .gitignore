@@ -1,5 +1,5 @@
 *.pdf
-*.txt
+
 
 # python/uv artifacts
 .venv/
