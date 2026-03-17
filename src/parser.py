@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+"""Configuration parsing and validation for maze generation."""
+
 from typing import Optional, Any
 import sys
 
 
 class Config:
+    """Typed container for maze runtime configuration values."""
+
     width: int
     height: int
     entry: tuple
@@ -25,6 +29,20 @@ class Config:
         perfect: bool,
         seed: Optional[int] = None,
     ) -> None:
+        """Build a configuration object from validated values.
+
+        Args:
+            width: Number of maze columns.
+            height: Number of maze rows.
+            entry: Entry cell coordinates as (row, column).
+            exit: Exit cell coordinates as (row, column).
+            output_file: Path where the output maze file is written.
+            perfect: Whether the maze should keep perfect-maze constraints.
+            seed: Optional random seed for reproducible generation.
+
+        Returns:
+            None.
+        """
         self.width = width
         self.height = height
         self.entry = entry
@@ -35,6 +53,14 @@ class Config:
 
 
 def parse_config(url_path: str) -> dict[str, str]:
+    """Parse a key-value configuration file into a dictionary.
+
+    Args:
+        url_path: Path to the configuration file.
+
+    Returns:
+        A dictionary containing lowercase keys and stripped string values.
+    """
     config = {}
     try:
         with open(url_path, "r") as f:
@@ -48,6 +74,14 @@ def parse_config(url_path: str) -> dict[str, str]:
 
 
 def validate_config(config: dict[str, str]) -> dict[str, Any] | None:
+    """Validate and convert raw config values into runtime types.
+
+    Args:
+        config: Raw key-value map produced by parsing the config file.
+
+    Returns:
+        A dictionary of validated and converted values, or None.
+    """
     keys = ["width", "height", "entry", "exit",
             "output_file", "perfect", "seed"]
     validated: dict[str, Any] = {}
@@ -84,6 +118,14 @@ def validate_config(config: dict[str, str]) -> dict[str, Any] | None:
 
 
 def get_config(url: str) -> Config:
+    """Load, validate, and instantiate the project Config object.
+
+    Args:
+        url: Path to the configuration file.
+
+    Returns:
+        A fully initialized Config instance.
+    """
     first = parse_config(url)
     config = validate_config(first)
     if config is None:
@@ -100,6 +142,11 @@ def get_config(url: str) -> Config:
 
 
 def parse() -> None:
+    """Utility entry point to print parsed and validated config values.
+
+    Returns:
+        None.
+    """
     config = parse_config("../config.txt")
     for k, v in config.items():
         print(f"{k}={v}")

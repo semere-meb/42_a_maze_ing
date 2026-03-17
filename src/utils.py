@@ -1,7 +1,17 @@
+"""Conversion and serialization helpers for maze output."""
+
 from generator import Grid
 
 
 def get_walls_as_int(cell: Grid.Cell) -> int:
+    """Convert a cell wall state into the 4-bit integer encoding.
+
+    Args:
+        cell: Cell whose wall booleans are encoded.
+
+    Returns:
+        Integer value with bits mapped to N/E/S/W walls.
+    """
     # north (LSB) 0
     # east bit 1
     # south bit 2
@@ -21,12 +31,28 @@ def get_walls_as_int(cell: Grid.Cell) -> int:
 
 
 def get_hex(cell: Grid.Cell) -> str:
+    """Convert a cell wall state into a hexadecimal digit.
+
+    Args:
+        cell: Cell whose wall booleans are encoded.
+
+    Returns:
+        A single lowercase hexadecimal character.
+    """
     hex = "0123456789abcdef"
     idx = get_walls_as_int(cell)
     return hex[idx]
 
 
 def construct_hex_string(grid: Grid) -> str:
+    """Serialize all maze cells into the hexadecimal row format.
+
+    Args:
+        grid: Maze grid to serialize.
+
+    Returns:
+        Full maze body including row newlines and trailing empty line.
+    """
     maze = ""
     for row in grid.adj:
         for cell in row:
@@ -36,6 +62,14 @@ def construct_hex_string(grid: Grid) -> str:
 
 
 def path_to_string(path: list[Grid.Cell]) -> str:
+    """Encode a cell path into compass directions.
+
+    Args:
+        path: Ordered list of cells from start to destination.
+
+    Returns:
+        A direction string using N, E, S, and W followed by newline.
+    """
     output = ""
     i = 1
     while i < len(path):
@@ -58,6 +92,18 @@ def path_to_string(path: list[Grid.Cell]) -> str:
 def write_to_file(
     entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell], url: str
 ) -> bool:
+    """Write maze layout, endpoints, and shortest path to disk.
+
+    Args:
+        entry: Entry coordinate as (row, column).
+        exit: Exit coordinate as (row, column).
+        grid: Generated maze grid.
+        path: Shortest path from entry to exit.
+        url: Destination output file path.
+
+    Returns:
+        True if writing succeeded, else False.
+    """
     output = construct_hex_string(grid)
     output += f"{entry[0]},{entry[1]}\n{exit[0]},{exit[1]}\n"
     output += path_to_string(path)

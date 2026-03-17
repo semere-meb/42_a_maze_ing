@@ -1,3 +1,5 @@
+"""Maze data structures, generation, traversal, and rendering helpers."""
+
 from typing import List, Any
 from collections import defaultdict, deque
 import random
@@ -19,6 +21,19 @@ def put_pixel(
     y: int,
     color: int,
 ) -> None:
+    """Write a single RGBA pixel in the MLX image buffer.
+
+    Args:
+        data_addr: Raw writable image buffer.
+        line_len: Number of bytes per image row.
+        bpp: Bits per pixel.
+        x: Horizontal pixel coordinate.
+        y: Vertical pixel coordinate.
+        color: RGB color as an integer.
+
+    Returns:
+        None.
+    """
     offset = (y * line_len) + (x * (bpp // 8))
     data_addr[offset] = (color) & 0xFF  # B
     data_addr[offset + 1] = (color >> 8) & 0xFF  # G
@@ -36,6 +51,21 @@ def put_box(
     h: int,
     color: int,
 ) -> None:
+    """Draw a filled rectangle into the MLX image buffer.
+
+    Args:
+        data_addr: Raw writable image buffer.
+        line_len: Number of bytes per image row.
+        bpp: Bits per pixel.
+        x: Rectangle left coordinate.
+        y: Rectangle top coordinate.
+        w: Rectangle width in pixels.
+        h: Rectangle height in pixels.
+        color: RGB color as an integer.
+
+    Returns:
+        None.
+    """
     for yy in range(h):
         for xx in range(w):
             put_pixel(data_addr, line_len, bpp, x + xx, y + yy, color)
@@ -46,6 +76,16 @@ def break_perfect(
     ps: set[tuple],
     height: int
 ) -> None:
+    """Open one additional wall to break perfect-maze uniqueness.
+
+    Args:
+        grid: Matrix of maze cells.
+        ps: Coordinates reserved for the closed "42" pattern.
+        height: Maze height in number of rows.
+
+    Returns:
+        None.
+    """
     for row in grid:
         for cell in row:
             h, w = cell.pos
@@ -57,6 +97,8 @@ def break_perfect(
 
 
 class Grid:
+    """Grid wrapper storing maze cells and derived adjacency relations."""
+
     adj: List[List["Cell"]]
     num_cells: int
     height: int
@@ -65,6 +107,13 @@ class Grid:
     adj_list: dict["Cell", List["Cell"]]
 
     def __init__(self, adj: List[List["Cell"]], height: int, width: int):
+        """Initialize grid metadata and cell matrix.
+
+        Args:
+            adj: Two-dimensional matrix of Cell instances.
+            height: Grid height in cells.
+            width: Grid width in cells.
+        """
         self.adj = adj
         self.num_cells = height * width
         self.width = width
@@ -72,6 +121,11 @@ class Grid:
         self.maze = False
 
     def generate_adj_list(self) -> dict["Cell", List["Cell"]]:
+        """Build adjacency list from currently open walls between cells.
+
+        Returns:
+            A mapping from each cell to neighboring reachable cells.
+        """
         adj_list = defaultdict(list)
         for row in self.adj:
             for c in row:
@@ -87,6 +141,8 @@ class Grid:
         return adj_list
 
     class Cell:
+        """Single maze cell with walls and rendering state."""
+
         pos: tuple[int, int]
         n: bool
         e: bool
@@ -108,6 +164,23 @@ class Grid:
             height: int,
             width: int,
         ) -> None:
+            """Create a maze cell with initial wall and display values.
+
+            Args:
+                m: MLX instance.
+                mlx_ptr: MLX context pointer.
+                win_ptr: MLX window pointer.
+                pos: Cell position as (row, column).
+                n: Whether north wall is closed.
+                e: Whether east wall is closed.
+                s: Whether south wall is closed.
+                w: Whether west wall is closed.
+                height: Cell pixel height.
+                width: Cell pixel width.
+
+            Returns:
+                None.
+            """
             self.m = m
             self.mlx_ptr = mlx_ptr
             self.win_ptr = win_ptr
@@ -124,6 +197,16 @@ class Grid:
             self.path = False
 
         def render(self, data_addr: memoryview, ll: int, bpp: int) -> None:
+            """Render this cell and its walls into the image buffer.
+
+            Args:
+                data_addr: Raw writable image buffer.
+                ll: Number of bytes per image row.
+                bpp: Bits per pixel.
+
+            Returns:
+                None.
+            """
             row, column = self.pos
             x = column * self.width
             y = row * self.height
@@ -202,6 +285,16 @@ class Grid:
 
 
 def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
+    """Compute and mark a shortest path from entry to exit.
+
+    Args:
+        grid: Grid containing the maze cells.
+        entry: Starting cell.
+        exit: Destination cell.
+
+    Returns:
+        The path as an ordered list of cells from entry to exit.
+    """
     adj_list = grid.generate_adj_list()
     q = deque([entry])
     parent: dict[Grid.Cell, Any] = {entry: None}
@@ -226,6 +319,15 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
 
 
 def get_pattern_set(height: int, width: int) -> set[tuple]:
+    """Generate coordinates used to draw the closed-cell "42" pattern.
+
+    Args:
+        height: Maze height in cells.
+        width: Maze width in cells.
+
+    Returns:
+        A set of (row, column) coordinates for the pattern.
+    """
     pattern: set[tuple] = set()
     if height < 6 or width < 8:
         return pattern
@@ -264,6 +366,21 @@ def generate_grid(
     cell_width: int,
     ps: set,
 ) -> Grid:
+    """Build an all-walls-closed grid and mark pattern cells.
+
+    Args:
+        height: Maze height in cells.
+        width: Maze width in cells.
+        m: MLX instance.
+        mlx_ptr: MLX context pointer.
+        win_ptr: MLX window pointer.
+        cell_height: Cell pixel height.
+        cell_width: Cell pixel width.
+        ps: Coordinates reserved for the closed "42" pattern.
+
+    Returns:
+        A Grid initialized with fresh Cell objects.
+    """
     out = []
     pattern_set = ps
     # pattern_set = {}
@@ -292,6 +409,18 @@ def generate_grid(
 def wilson_generate(
     grid: Grid, root: tuple, height: int, width: int, pattern_set: set
 ) -> None:
+    """Generate a maze using Wilson's algorithm with loop erasure.
+
+    Args:
+        grid: Grid to mutate into a generated maze.
+        root: Coordinate of the initial tree node.
+        height: Maze height in cells.
+        width: Maze width in cells.
+        pattern_set: Coordinates reserved for the closed "42" pattern.
+
+    Returns:
+        None.
+    """
     in_tree = {}
     for cell in [c for row in grid.adj for c in row]:
         if cell.pattern:
@@ -316,6 +445,16 @@ def wilson_generate(
 
 
 def remove_wall(a: tuple[int, int], b: tuple[int, int], grid: Grid) -> None:
+    """Open the shared wall between two orthogonally adjacent cells.
+
+    Args:
+        a: First cell coordinate.
+        b: Second cell coordinate.
+        grid: Grid containing both cells.
+
+    Returns:
+        None.
+    """
     r, c = a[0] - b[0], a[1] - b[1]
     cell_a = grid.adj[a[0]][a[1]]  # instance of Cell object
     cell_b = grid.adj[b[0]][b[1]]
@@ -334,6 +473,16 @@ def rand_neighbor(
     grid: Grid,
     f: set[Any]
 ) -> tuple[int, int]:
+    """Select a random valid neighbor not in the forbidden set.
+
+    Args:
+        cell: Source coordinate.
+        grid: Grid boundaries provider.
+        f: Set of coordinates to exclude from candidates.
+
+    Returns:
+        A randomly chosen neighboring coordinate.
+    """
     r, c = cell
     neighbors = []
 
@@ -351,6 +500,17 @@ def rand_neighbor(
 def loop_erased_random_walk(
     start: tuple[int, int], in_tree: dict, grid: Grid, pattern_set: set
 ) -> List[tuple[int, int]]:
+    """Run a loop-erased random walk until reaching the current tree.
+
+    Args:
+        start: Starting coordinate for the walk.
+        in_tree: Membership map of coordinates already in the maze tree.
+        grid: Grid used to evaluate neighbor bounds.
+        pattern_set: Coordinates reserved for the closed "42" pattern.
+
+    Returns:
+        Ordered list of coordinates describing the loop-erased walk.
+    """
     current = start
     path: List[tuple[int, int]] = []
     visited_idx: dict[tuple[int, int], int] = {}

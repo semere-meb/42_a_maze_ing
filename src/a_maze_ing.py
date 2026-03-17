@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Entry point for maze generation and interactive rendering."""
+
 import os
 import sys
 import mlx
@@ -22,6 +24,15 @@ HEIGHT = 800
 
 
 def on_keypress(keycode: int, _: Any) -> None:
+    """Handle keyboard events for the rendering window.
+
+    Args:
+        keycode: Numeric key code received from the window system.
+        _: Unused callback payload required by the hook signature.
+
+    Returns:
+        None.
+    """
     if keycode == 65307:
         os._exit(0)
 
@@ -31,6 +42,14 @@ def on_keypress(keycode: int, _: Any) -> None:
 
 
 def main() -> None:
+    """Run the full maze generation workflow from CLI config.
+
+    Reads configuration, generates and optionally alters the maze, writes the
+    serialized output file, and launches an MLX window to render the result.
+
+    Returns:
+        None.
+    """
     print(sys.argv[0])
     if len(sys.argv) != 2:
         print("BOOM")
