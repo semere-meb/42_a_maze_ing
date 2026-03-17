@@ -1,16 +1,23 @@
-import os
+#!/usr/bin/env python3
 
+import os
+import sys
 import mlx
 import generator as gen
 from utils import write_to_file
-from parser import Config, get_config
+from parser import get_config
 import random
 
+# Colors
 WHITE = 0xFFFFFF
 BLACK = 0x000000
 RED = 0xFF0000
 GREEN = 0x00FF00
 BLUE = 0x0000FF
+
+# Window size
+WIDTH = 800
+HEIGHT = 800
 
 
 def put_pixel(data_addr, line_len, bpp, x, y, color):
@@ -35,10 +42,13 @@ def on_keypress(keycode, param):
 def on_close(param):
     exit(0)
 
+
 def main():
-    WIDTH = 800
-    HEIGHT = 800
-    config = get_config("config.txt")
+    print(sys.argv[0])
+    if len(sys.argv) != 2:
+        print("BOOM")
+        return
+    config = get_config(sys.argv[1])
     if config is None:
         print("ERROR: Error while parsing config file")
         return
@@ -74,8 +84,8 @@ def main():
     gen.wilson_generate(grid, entry, config.height, config.width, ps)
 
     if not config.perfect:
-       gen.break_perfect(grid.adj, ps, config.height)
-    
+        gen.break_perfect(grid.adj, ps, config.height)
+
     cells = grid.adj
 
     path = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
@@ -83,8 +93,9 @@ def main():
     for row in cells:
         for cell in row:
             cell.render(data_addr, line_len, bpp)
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 10, GREEN, "MENU")
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 10 + 30, GREEN, "ESC. Quit")
+    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 20, GREEN, "MENU")
+    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 40, GREEN, f"SEED: {seed}")
+    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 60, GREEN, "ESC. Quit")
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 

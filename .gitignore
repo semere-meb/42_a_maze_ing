@@ -1,5 +1,5 @@
 *.pdf
-
+maze.txt
 
 # python/uv artifacts
 .venv/

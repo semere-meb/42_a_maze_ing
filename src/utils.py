@@ -1,5 +1,5 @@
-
 from generator import Grid
+
 
 def get_walls_as_int(cell: Grid.Cell) -> int:
     # north (LSB) 0
@@ -21,17 +21,19 @@ def get_walls_as_int(cell: Grid.Cell) -> int:
 
 
 def get_hex(cell: Grid.Cell) -> str:
-    hex = "0123456789abcdef"    
+    hex = "0123456789abcdef"
     idx = get_walls_as_int(cell)
     return hex[idx]
+
 
 def construct_hex_string(grid: Grid) -> str:
     maze = ""
     for row in grid.adj:
         for cell in row:
             maze += get_hex(cell)
-        maze += '\n'
-    return maze + '\n'
+        maze += "\n"
+    return maze + "\n"
+
 
 def path_to_string(path: list[Grid.Cell]) -> str:
     output = ""
@@ -40,20 +42,22 @@ def path_to_string(path: list[Grid.Cell]) -> str:
         prev = path[i - 1].pos
         curr = path[i].pos
         if curr[0] - prev[0] == 1:
-            output += 'S'
+            output += "S"
         elif curr[0] - prev[0] == -1:
-            output += 'N'
+            output += "N"
         elif curr[1] - prev[1] == 1:
-            output += 'E'
+            output += "E"
         elif curr[1] - prev[1] == -1:
-            output += 'W'
+            output += "W"
         else:
             output += " WRONG "
         i += 1
-    return output + '\n'
-    
+    return output + "\n"
 
-def write_to_file(entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell], url: str) -> bool:
+
+def write_to_file(
+    entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell], url: str
+) -> bool:
     output = construct_hex_string(grid)
     output += f"{entry[0]},{entry[1]}\n{exit[0]},{exit[1]}\n"
     output += path_to_string(path)
@@ -67,4 +71,3 @@ def write_to_file(entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell], 
         return False
     finally:
         f.close()
-            

@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-
 from typing import List
 from collections import defaultdict, deque
-import time
 import random
 import os
 
@@ -37,7 +34,11 @@ def on_close(param):
     exit(0)
 
 
-def break_perfect(grid: List[List["Cell"]], ps: set[tuple], height: int):
+def break_perfect(
+    grid: List[List["Grid.Cell"]],
+    ps: set[tuple],
+    height: int
+) -> None:
     for row in grid:
         for cell in row:
             h, w = cell.pos
@@ -46,7 +47,7 @@ def break_perfect(grid: List[List["Cell"]], ps: set[tuple], height: int):
                 cell_below = grid[h + 1][w]
                 cell_below.n = False
                 return
-    
+
 
 class Grid:
     adj: List[List["Cell"]]
@@ -56,7 +57,7 @@ class Grid:
     maze: bool
     adj_list: dict[List["Cell"]]
 
-    def __init__(self, adj: List[List["Cell"]], height: int, width: int) -> None:
+    def __init__(self, adj: List[List["Cell"]], height: int, width: int):
         self.adj = adj
         self.num_cells = height * width
         self.width = width
@@ -122,7 +123,14 @@ class Grid:
             wall_size = self.width // 20
             if self.pattern:
                 put_box(
-                    data_addr, line_len, bpp, x, y, self.width, self.height, GREEN
+                    data_addr,
+                    line_len,
+                    bpp,
+                    x,
+                    y,
+                    self.width,
+                    self.height,
+                    GREEN,
                 )  # inner
                 return
 
@@ -183,7 +191,6 @@ class Grid:
 def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
     adj_list = grid.generate_adj_list()
     q = deque([entry])
-    visited = set([entry])
     parent = {entry: None}
 
     while len(q):
@@ -273,7 +280,6 @@ def wilson_generate(
     grid: Grid, root: tuple, height: int, width: int, pattern_set: set
 ) -> None:
     in_tree = {}
-    forbidden = pattern_set
     for cell in [c for row in grid.adj for c in row]:
         if cell.pattern:
             continue
@@ -332,7 +338,7 @@ def loop_erased_random_walk(
     path = []
     visited_idx = {}
 
-    while in_tree[current] == False:
+    while not in_tree[current]:
         if current in visited_idx.keys():
             loop_start_idx = visited_idx[current]
 
@@ -350,26 +356,3 @@ def loop_erased_random_walk(
 
     path.append(current)
     return path
-
-
-def main():
-    grid = generate_grid(5, 15)
-
-    wilson_generate(grid, (0, 0), 5, 15)
-    for sub in grid.adj:
-        for cell in sub:
-            print(cell.pos, (cell.n, cell.e, cell.s, cell.w), sep="->")
-        print("")
-
-    grid.display()
-
-    adj_list = grid.generate_adj_list()
-    path = bfs(grid, grid.adj[0][0], grid.adj[4][4])
-    print("AFTER BFS")
-    for i in path:
-        print(i.pos, end=" ")
-    print("")
-
-
-if __name__ == "__main__":
-    main()

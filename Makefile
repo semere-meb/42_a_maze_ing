@@ -1,7 +1,7 @@
 VENV = .venv
 
 run: install
-	uv run python src/main.py
+	uv run src/a_maze_ing.py config.txt
 
 install: $(VENV)
 
@@ -35,7 +35,7 @@ format:
 	uv run ruff format src
 
 debug: $(VENV)
-	uv run python -m pdb src/main.py
+	uv run python -m pdb src/a_maze_ing.py
 
 reset-env:
 	rm -rf $(VENV)
