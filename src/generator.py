@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Any
 from collections import defaultdict, deque
 import random
-import os
+import mlx
 
 
 WHITE = 0xFFFFFF
@@ -11,7 +11,14 @@ GREEN = 0x00FF00
 BLUE = 0x0000FF
 
 
-def put_pixel(data_addr, line_len, bpp, x, y, color):
+def put_pixel(
+    data_addr: memoryview,
+    line_len: int,
+    bpp: int,
+    x: int,
+    y: int,
+    color: int,
+) -> None:
     offset = (y * line_len) + (x * (bpp // 8))
     data_addr[offset] = (color) & 0xFF  # B
     data_addr[offset + 1] = (color >> 8) & 0xFF  # G
@@ -19,19 +26,19 @@ def put_pixel(data_addr, line_len, bpp, x, y, color):
     data_addr[offset + 3] = 0xFF  # A
 
 
-def put_box(data_addr, line_len, bpp, x, y, w, h, color):
+def put_box(
+    data_addr: memoryview,
+    line_len: int,
+    bpp: int,
+    x: int,
+    y: int,
+    w: int,
+    h: int,
+    color: int,
+) -> None:
     for yy in range(h):
         for xx in range(w):
             put_pixel(data_addr, line_len, bpp, x + xx, y + yy, color)
-
-
-def on_keypress(keycode, param):
-    if keycode == 65307:
-        os._exit(0)
-
-
-def on_close(param):
-    exit(0)
 
 
 def break_perfect(
@@ -55,7 +62,7 @@ class Grid:
     height: int
     width: int
     maze: bool
-    adj_list: dict[List["Cell"]]
+    adj_list: dict["Cell", List["Cell"]]
 
     def __init__(self, adj: List[List["Cell"]], height: int, width: int):
         self.adj = adj
@@ -64,7 +71,7 @@ class Grid:
         self.height = height
         self.maze = False
 
-    def generate_adj_list(self) -> dict[List["Cell"]]:
+    def generate_adj_list(self) -> dict["Cell", List["Cell"]]:
         adj_list = defaultdict(list)
         for row in self.adj:
             for c in row:
@@ -80,7 +87,7 @@ class Grid:
         return adj_list
 
     class Cell:
-        pos: tuple[int]
+        pos: tuple[int, int]
         n: bool
         e: bool
         s: bool
@@ -90,10 +97,10 @@ class Grid:
 
         def __init__(
             self,
-            m,
-            mlx_ptr,
-            win_ptr,
-            pos: tuple[int],
+            m: mlx.Mlx,
+            mlx_ptr: memoryview,
+            win_ptr: memoryview,
+            pos: tuple[int, int],
             n: bool,
             e: bool,
             s: bool,
@@ -116,7 +123,7 @@ class Grid:
             self.pattern = False
             self.path = False
 
-        def render(self, data_addr, line_len, bpp) -> None:
+        def render(self, data_addr: memoryview, ll: int, bpp: int) -> None:
             row, column = self.pos
             x = column * self.width
             y = row * self.height
@@ -124,7 +131,7 @@ class Grid:
             if self.pattern:
                 put_box(
                     data_addr,
-                    line_len,
+                    ll,
                     bpp,
                     x,
                     y,
@@ -134,64 +141,70 @@ class Grid:
                 )  # inner
                 return
 
-            not self.path and put_box(
-                data_addr,
-                line_len,
-                bpp,
-                x + wall_size,
-                y + wall_size,
-                self.width - 2 * wall_size,
-                self.height - 2 * wall_size,
-                BLACK,
-            )  # inner
+            if not self.path:
+                put_box(
+                    data_addr,
+                    ll,
+                    bpp,
+                    x + wall_size,
+                    y + wall_size,
+                    self.width - 2 * wall_size,
+                    self.height - 2 * wall_size,
+                    BLACK,
+                )  # inner
 
-            self.path and put_box(
-                data_addr,
-                line_len,
-                bpp,
-                x + wall_size,
-                y + wall_size,
-                self.width - 2 * wall_size,
-                self.height - 2 * wall_size,
-                RED,
-            )  # inner
+            if self.path:
+                put_box(
+                    data_addr,
+                    ll,
+                    bpp,
+                    x + wall_size,
+                    y + wall_size,
+                    self.width - 2 * wall_size,
+                    self.height - 2 * wall_size,
+                    RED,
+                )  # inner
 
-            self.w and put_box(
-                data_addr, line_len, bpp, x, y, wall_size, self.height, BLUE
-            )  # west
-            self.e and put_box(
-                data_addr,
-                line_len,
-                bpp,
-                x + self.width - wall_size,
-                y,
-                wall_size,
-                self.height,
-                BLUE,
-            )  # east
+            if self.w:
+                put_box(
+                    data_addr, ll, bpp, x, y, wall_size, self.height, BLUE
+                )  # west
+            if self.e:
+                put_box(
+                    data_addr,
+                    ll,
+                    bpp,
+                    x + self.width - wall_size,
+                    y,
+                    wall_size,
+                    self.height,
+                    BLUE,
+                )  # east
 
-            self.n and put_box(
-                data_addr, line_len, bpp, x, y, self.width, wall_size, BLUE
-            )  # north
-            self.s and put_box(
-                data_addr,
-                line_len,
-                bpp,
-                x,
-                y + self.height - wall_size,
-                self.width,
-                wall_size,
-                BLUE,
-            )  # south
+            if self.n:
+                put_box(
+                    data_addr, ll, bpp, x, y, self.width, wall_size, BLUE
+                )  # north
+            if self.s:
+                put_box(
+                    data_addr,
+                    ll,
+                    bpp,
+                    x,
+                    y + self.height - wall_size,
+                    self.width,
+                    wall_size,
+                    BLUE,
+                )  # south
 
-            def __hash__(self):
+            def __hash__(self: "Grid.Cell") -> int:
                 return hash(self.pos)
 
 
 def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
     adj_list = grid.generate_adj_list()
     q = deque([entry])
-    parent = {entry: None}
+    parent: dict[Grid.Cell, Any] = {entry: None}
 
     while len(q):
         curr = q.popleft()
@@ -213,7 +226,7 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
 
 
 def get_pattern_set(height: int, width: int) -> set[tuple]:
-    pattern = set()
+    pattern: set[tuple] = set()
     if height < 6 or width < 8:
         return pattern
     top_left = ((height - 5) // 2, (width - 7) // 2)
@@ -244,9 +257,9 @@ def get_pattern_set(height: int, width: int) -> set[tuple]:
 def generate_grid(
     height: int,
     width: int,
-    m,
-    mlx_ptr,
-    win_ptr,
+    m: mlx.Mlx,
+    mlx_ptr: memoryview,
+    win_ptr: memoryview,
     cell_height: int,
     cell_width: int,
     ps: set,
@@ -302,7 +315,7 @@ def wilson_generate(
     grid.maze = True
 
 
-def remove_wall(a: tuple[int], b: tuple[int], grid: Grid) -> None:
+def remove_wall(a: tuple[int, int], b: tuple[int, int], grid: Grid) -> None:
     r, c = a[0] - b[0], a[1] - b[1]
     cell_a = grid.adj[a[0]][a[1]]  # instance of Cell object
     cell_b = grid.adj[b[0]][b[1]]
@@ -316,27 +329,31 @@ def remove_wall(a: tuple[int], b: tuple[int], grid: Grid) -> None:
         cell_a.w, cell_b.e = False, False
 
 
-def rand_neighbor(cell: tuple[int], grid: Grid, forbidden: dict) -> tuple[int]:
+def rand_neighbor(
+    cell: tuple[int, int],
+    grid: Grid,
+    f: set[Any]
+) -> tuple[int, int]:
     r, c = cell
     neighbors = []
 
-    if r - 1 >= 0 and (r - 1, c) not in forbidden:
+    if r - 1 >= 0 and (r - 1, c) not in f:
         neighbors.append((r - 1, c))
-    if c - 1 >= 0 and (r, c - 1) not in forbidden:
+    if c - 1 >= 0 and (r, c - 1) not in f:
         neighbors.append((r, c - 1))
-    if r + 1 < grid.height and (r + 1, c) not in forbidden:
+    if r + 1 < grid.height and (r + 1, c) not in f:
         neighbors.append((r + 1, c))
-    if c + 1 < grid.width and (r, c + 1) not in forbidden:
+    if c + 1 < grid.width and (r, c + 1) not in f:
         neighbors.append((r, c + 1))
     return random.choice(neighbors)
 
 
 def loop_erased_random_walk(
-    start: tuple[int], in_tree: dict, grid: Grid, pattern_set: set
-) -> List[tuple[int]]:
+    start: tuple[int, int], in_tree: dict, grid: Grid, pattern_set: set
+) -> List[tuple[int, int]]:
     current = start
-    path = []
-    visited_idx = {}
+    path: List[tuple[int, int]] = []
+    visited_idx: dict[tuple[int, int], int] = {}
 
     while not in_tree[current]:
         if current in visited_idx.keys():

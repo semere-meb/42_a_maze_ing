@@ -4,6 +4,7 @@ import os
 import sys
 import mlx
 import generator as gen
+from typing import Any
 from utils import write_to_file
 from parser import get_config
 import random
@@ -20,30 +21,16 @@ WIDTH = 800
 HEIGHT = 800
 
 
-def put_pixel(data_addr, line_len, bpp, x, y, color):
-    offset = (y * line_len) + (x * (bpp // 8))
-    data_addr[offset] = (color) & 0xFF  # B
-    data_addr[offset + 1] = (color >> 8) & 0xFF  # G
-    data_addr[offset + 2] = (color >> 16) & 0xFF  # R
-    data_addr[offset + 3] = 0xFF  # A
-
-
-def put_box(data_addr, line_len, bpp, x, y, w, h, color):
-    for yy in range(h):
-        for xx in range(w):
-            put_pixel(data_addr, line_len, bpp, x + xx, y + yy, color)
-
-
-def on_keypress(keycode, param):
+def on_keypress(keycode: int, _: Any) -> None:
     if keycode == 65307:
         os._exit(0)
 
 
-def on_close(param):
-    exit(0)
+# def on_close(_: Any) -> None:
+#     exit(0)
 
 
-def main():
+def main() -> None:
     print(sys.argv[0])
     if len(sys.argv) != 2:
         print("BOOM")

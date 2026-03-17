@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Optional
+from typing import Optional, Any
 import sys
 
 
@@ -34,7 +34,7 @@ class Config:
         self.seed = seed if seed else 42
 
 
-def parse_config(url_path: str) -> dict:
+def parse_config(url_path: str) -> dict[str, str]:
     config = {}
     try:
         with open(url_path, "r") as f:
@@ -47,10 +47,10 @@ def parse_config(url_path: str) -> dict:
         sys.exit()
 
 
-def validate_config(config: dict) -> dict | None:
+def validate_config(config: dict[str, str]) -> dict[str, Any] | None:
     keys = ["width", "height", "entry", "exit",
             "output_file", "perfect", "seed"]
-    validated = {}
+    validated: dict[str, Any] = {}
     try:
         for k in keys:
             val = config.get(k)
