@@ -52,18 +52,18 @@ def on_keypress(keycode: int, param: dict[str, Any]) -> None:
                             param['line_len'],
                             param['bpp'],
                             cell.colors[cell.wall_color_ix],
-                            cell.colors[cell.path_color_ix],
+                            cell.path_colors[cell.path_color_ix],
                             )
 
     elif keycode == 112:    # P
         for cell in param['path']:
-            cell.path_color_ix = (cell.path_color_ix + 1) % 3
+            cell.path_color_ix = (cell.path_color_ix + 1) % 2
             cell.render(
                         param['data_addr'],
                         param['line_len'],
                         param['bpp'],
                         cell.colors[cell.wall_color_ix],
-                        cell.colors[cell.path_color_ix],
+                        cell.path_colors[cell.path_color_ix],
                         )
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
@@ -128,11 +128,15 @@ def main() -> None:
         for cell in row:
             cell.render(data_addr, line_len, bpp,
                         cell.colors[cell.wall_color_ix],
-                        cell.colors[cell.path_color_ix],
+                        cell.path_colors[cell.path_color_ix],
                         )
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 20, GREEN, "MENU")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 40, GREEN, f"SEED: {seed}")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 60, GREEN, "ESC. Quit")
+    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 80, GREEN,
+                     "C. Change wall colors")
+    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 100, GREEN,
+                     "P. Toggle path color")
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 

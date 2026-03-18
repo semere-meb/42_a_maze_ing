@@ -196,8 +196,9 @@ class Grid:
             self.pattern = False
             self.path = False
             self.colors = [BLUE, WHITE, RED]
+            self.path_colors = [0xffff00ff, BLACK]
             self.wall_color_ix = 0
-            self.path_color_ix = 1
+            self.path_color_ix = 0
 
         def render(self,
                    data_addr: memoryview,
@@ -218,7 +219,7 @@ class Grid:
             row, column = self.pos
             x = column * self.width
             y = row * self.height
-            wall_size = self.width // 20
+            wall_size = self.width // 10
             if self.pattern:
                 put_box(
                     data_addr,
@@ -253,7 +254,7 @@ class Grid:
                     y + wall_size,
                     self.width - 2 * wall_size,
                     self.height - 2 * wall_size,
-                    self.colors[self.path_color_ix],
+                    self.path_colors[self.path_color_ix],
                 )
 
             if self.w:      # west wall
