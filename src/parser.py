@@ -11,20 +11,26 @@ class Config:
 
     width: int
     height: int
-    entry: tuple
-    exit: tuple
+    entry: tuple[int, int]
+    exit: tuple[int, int]
     output_file: str
     perfect: bool
+    seed: int
 
+    cell_width: int
+    cell_height: int
     fill_color: int
     border_color: int
+    path_color: int
+    patter_color: int
+    menu_color: int
 
     def __init__(
         self,
         width: int,
         height: int,
-        entry: tuple,
-        exit: tuple,
+        entry: tuple[int, int],
+        exit: tuple[int, int],
         output_file: str,
         perfect: bool,
         seed: Optional[int] = None,

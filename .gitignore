@@ -1,6 +1,7 @@
 *.pdf
 maze.txt
 missing.txt
+plan.txt
 
 
 # python/uv artifacts

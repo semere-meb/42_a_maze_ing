@@ -90,7 +90,11 @@ def path_to_string(path: list[Grid.Cell]) -> str:
 
 
 def write_to_file(
-    entry: tuple, exit: tuple, grid: Grid, path: list[Grid.Cell], url: str
+    entry: tuple[int, int],
+    exit: tuple[int, int],
+    grid: Grid,
+    path: list[Grid.Cell],
+    url: str,
 ) -> bool:
     """Write maze layout, endpoints, and shortest path to disk.
 

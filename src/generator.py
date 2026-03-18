@@ -73,7 +73,7 @@ def put_box(
 
 def break_perfect(
     grid: List[List["Grid.Cell"]],
-    ps: set[tuple],
+    ps: set[tuple[int, int]],
     height: int
 ) -> None:
     """Open one additional wall to break perfect-maze uniqueness.
@@ -318,7 +318,7 @@ def bfs(grid: Grid, entry: Grid.Cell, exit: Grid.Cell) -> List[Grid.Cell]:
     return path
 
 
-def get_pattern_set(height: int, width: int) -> set[tuple]:
+def get_pattern_set(height: int, width: int) -> set[tuple[int, int]]:
     """Generate coordinates used to draw the closed-cell "42" pattern.
 
     Args:
@@ -328,7 +328,7 @@ def get_pattern_set(height: int, width: int) -> set[tuple]:
     Returns:
         A set of (row, column) coordinates for the pattern.
     """
-    pattern: set[tuple] = set()
+    pattern: set[tuple[int, int]] = set()
     if height < 6 or width < 8:
         return pattern
     top_left = ((height - 5) // 2, (width - 7) // 2)
@@ -364,7 +364,7 @@ def generate_grid(
     win_ptr: memoryview,
     cell_height: int,
     cell_width: int,
-    ps: set,
+    ps: set[tuple[int, int]],
 ) -> Grid:
     """Build an all-walls-closed grid and mark pattern cells.
 
@@ -407,7 +407,11 @@ def generate_grid(
 
 
 def wilson_generate(
-    grid: Grid, root: tuple, height: int, width: int, pattern_set: set
+    grid: Grid,
+    root: tuple[int, int],
+    height: int,
+    width: int,
+    pattern_set: set[tuple[int, int]],
 ) -> None:
     """Generate a maze using Wilson's algorithm with loop erasure.
 
@@ -421,7 +425,7 @@ def wilson_generate(
     Returns:
         None.
     """
-    in_tree = {}
+    in_tree: dict[tuple[int, int], bool] = {}
     for cell in [c for row in grid.adj for c in row]:
         if cell.pattern:
             continue
@@ -471,7 +475,7 @@ def remove_wall(a: tuple[int, int], b: tuple[int, int], grid: Grid) -> None:
 def rand_neighbor(
     cell: tuple[int, int],
     grid: Grid,
-    f: set[Any]
+    f: set[tuple[int, int]]
 ) -> tuple[int, int]:
     """Select a random valid neighbor not in the forbidden set.
 
@@ -484,7 +488,7 @@ def rand_neighbor(
         A randomly chosen neighboring coordinate.
     """
     r, c = cell
-    neighbors = []
+    neighbors: list[tuple[int, int]] = []
 
     if r - 1 >= 0 and (r - 1, c) not in f:
         neighbors.append((r - 1, c))
@@ -498,7 +502,10 @@ def rand_neighbor(
 
 
 def loop_erased_random_walk(
-    start: tuple[int, int], in_tree: dict, grid: Grid, pattern_set: set
+    start: tuple[int, int],
+    in_tree: dict[tuple[int, int], bool],
+    grid: Grid,
+    pattern_set: set[tuple[int, int]],
 ) -> List[tuple[int, int]]:
     """Run a loop-erased random walk until reaching the current tree.
 
