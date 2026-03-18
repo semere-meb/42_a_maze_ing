@@ -23,6 +23,48 @@ WIDTH = 800
 HEIGHT = 800
 
 
+def reseed(param):
+    config = param['config']
+    mlx_ptr = param['mlx_ptr']
+    win_ptr = param['win_ptr']
+    data_addr = param['data_addr']
+    line_len = param['line_len']
+    bpp = param['bpp']
+    win_ptr = param['win_ptr']
+    m = param['m']
+    entry = config.entry
+    exit = config.exit
+    grid = param['grid']
+    random.seed(random.randint(1, 1000))
+
+    ps = gen.get_pattern_set(config.height, config.width)
+    grid = gen.generate_grid(
+        config.height,
+        config.width,
+        m,
+        mlx_ptr,
+        win_ptr,
+        config.cell_height,
+        config.cell_width,
+        ps,
+    )
+    gen.wilson_generate(grid, config.entry, config.height, config.width, ps)
+
+    if not config.perfect:
+        gen.break_perfect(grid.adj, ps, config.height)
+
+    cells = grid.adj
+
+    path = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
+    write_to_file(entry, exit, grid, path, config.output_file)
+    for row in cells:
+        for cell in row:
+            cell.render(data_addr, line_len, bpp,
+                        cell.colors[cell.wall_color_ix],
+                        cell.path_colors[cell.path_color_ix],
+                        )
+
+
 def on_keypress(keycode: int, param: dict[str, Any]) -> None:
     """Handle keyboard events for the rendering window.
 
@@ -37,11 +79,19 @@ def on_keypress(keycode: int, param: dict[str, Any]) -> None:
     win_ptr = param['win_ptr']
     mlx_ptr = param['mlx_ptr']
     img_ptr = param['img_ptr']
+    data_addr = param['data_addr']
+    line_len = param['line_len']
+    bpp = param['bpp']
+
     if keycode == 65307:    # ESC
         os._exit(0)
 
     if keycode == 114:    # R
-        print("rerender with a new seed")
+        # print("rerender with a new seed")
+        for y in range(HEIGHT):
+            for x in range(WIDTH):
+                gen.put_pixel(data_addr, line_len, bpp,  x, y, 0x000000)
+        reseed(param)
 
     elif keycode == 99:    # C
         for row in param['grid'].adj:
@@ -96,6 +146,7 @@ def main() -> None:
     entry = config.entry
     exit = config.exit
     seed = config.seed
+
     random.seed(seed)
     m = mlx.Mlx()
     mlx_ptr = m.mlx_init()
@@ -131,7 +182,7 @@ def main() -> None:
                         cell.path_colors[cell.path_color_ix],
                         )
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 20, GREEN, "MENU")
-    m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 40, GREEN, f"SEED: {seed}")
+    # m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 40, GREEN, f"SEED: {seed}")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 60, GREEN, "ESC. Quit")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 80, GREEN,
                      "C. Change wall colors")
@@ -150,6 +201,7 @@ def main() -> None:
                        "line_len": line_len,
                        "bpp": bpp,
                        'path': path,
+                       'config': config
                    })
     m.mlx_loop(mlx_ptr)
 
