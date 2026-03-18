@@ -330,6 +330,7 @@ def get_pattern_set(height: int, width: int) -> set[tuple[int, int]]:
     """
     pattern: set[tuple[int, int]] = set()
     if height < 6 or width < 8:
+        print("Maze too small to draw the 42 pattern")
         return pattern
     top_left = ((height - 5) // 2, (width - 7) // 2)
     # four

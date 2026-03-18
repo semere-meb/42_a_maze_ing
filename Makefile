@@ -1,3 +1,8 @@
+SRC = a_maze_ing.py \
+	generator.py \
+	parser.py \
+	utils.py
+
 VENV = .venv
 
 run: install
@@ -17,9 +22,9 @@ clean:
 	rm -rf $(VENV)
 
 lint: $(VENV)
-	uv run ruff check src
-	uv run flake8 src
-	uv run mypy src \
+	uv run ruff check $(SRC)
+	uv run flake8 $(SRC)
+	uv run mypy $(SRC) \
 	--warn-return-any \
 	--warn-unused-ignores \
 	--ignore-missing-imports \
@@ -27,15 +32,15 @@ lint: $(VENV)
 	--check-untyped-defs
 
 lint-strict: $(VENV)
-	uv run ruff check src
-	uv run flake8 src
-	uv run mypy src --strict
+	uv run ruff check $(SRC)
+	uv run flake8 $(SRC)
+	uv run mypy $(SRC) --strict
 
 format:
-	uv run ruff format src
+	uv run ruff format $(SRC)
 
 debug: $(VENV)
-	uv run python -m pdb src/a_maze_ing.py
+	uv run python -m pdb $(SRC)/a_maze_ing.py
 
 reset-env:
 	rm -rf $(VENV)

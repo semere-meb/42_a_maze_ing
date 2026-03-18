@@ -120,6 +120,8 @@ def validate_config(config: dict[str, str]) -> dict[str, Any] | None:
                 validated[k] = True if val.lower() == "true" else False
             if k == "seed":
                 validated[k] = int(val)
+        if validated['entry'] == validated['exit']:
+            raise ValueError("Maze's entry and exit should be different")
         return validated
     except Exception as e:
         print(e)
