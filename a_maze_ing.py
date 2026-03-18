@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 """Entry point for maze generation and interactive rendering."""
+from typing import Any
 
 import os
 import sys
 import mlx
 import generator as gen
-from typing import Any
 from utils import write_to_file
 from parser import get_config
 import random
@@ -23,7 +23,7 @@ WIDTH = 800
 HEIGHT = 800
 
 
-def on_keypress(keycode: int, _: Any) -> None:
+def on_keypress(keycode: int, param: dict[str, Any]) -> None:
     """Handle keyboard events for the rendering window.
 
     Args:
@@ -33,12 +33,40 @@ def on_keypress(keycode: int, _: Any) -> None:
     Returns:
         None.
     """
-    if keycode == 65307:
+    m = param['m']
+    win_ptr = param['win_ptr']
+    mlx_ptr = param['mlx_ptr']
+    img_ptr = param['img_ptr']
+    if keycode == 65307:    # ESC
         os._exit(0)
 
+    if keycode == 114:    # R
+        print("rerender with a new seed")
 
-# def on_close(_: Any) -> None:
-#     exit(0)
+    elif keycode == 99:    # C
+        for row in param['grid'].adj:
+            for cell in row:
+                cell.wall_color_ix = (cell.wall_color_ix + 1) % 3
+                cell.render(
+                            param['data_addr'],
+                            param['line_len'],
+                            param['bpp'],
+                            cell.colors[cell.wall_color_ix],
+                            cell.colors[cell.path_color_ix],
+                            )
+
+    elif keycode == 112:    # P
+        for cell in param['path']:
+            cell.path_color_ix = (cell.path_color_ix + 1) % 3
+            cell.render(
+                        param['data_addr'],
+                        param['line_len'],
+                        param['bpp'],
+                        cell.colors[cell.wall_color_ix],
+                        cell.colors[cell.path_color_ix],
+                        )
+
+    m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 
 
 def main() -> None:
@@ -98,14 +126,27 @@ def main() -> None:
     write_to_file(entry, exit, grid, path, config.output_file)
     for row in cells:
         for cell in row:
-            cell.render(data_addr, line_len, bpp)
+            cell.render(data_addr, line_len, bpp,
+                        cell.colors[cell.wall_color_ix],
+                        cell.colors[cell.path_color_ix],
+                        )
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 20, GREEN, "MENU")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 40, GREEN, f"SEED: {seed}")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 60, GREEN, "ESC. Quit")
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 
-    m.mlx_key_hook(win_ptr, on_keypress, None)
+    m.mlx_key_hook(win_ptr, on_keypress, {
+                       "m": m,
+                       "mlx_ptr": mlx_ptr,
+                       "win_ptr": win_ptr,
+                       "img_ptr": img_ptr,
+                       "grid": grid,
+                       "data_addr": data_addr,
+                       "line_len": line_len,
+                       "bpp": bpp,
+                       'path': path,
+                   })
     m.mlx_loop(mlx_ptr)
 
 

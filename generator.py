@@ -195,8 +195,16 @@ class Grid:
             self.fill = False
             self.pattern = False
             self.path = False
+            self.colors = [BLUE, WHITE, RED]
+            self.wall_color_ix = 0
+            self.path_color_ix = 1
 
-        def render(self, data_addr: memoryview, ll: int, bpp: int) -> None:
+        def render(self,
+                   data_addr: memoryview,
+                   ll: int,
+                   bpp: int,
+                   wall_color: int,
+                   path_color: int) -> None:
             """Render this cell and its walls into the image buffer.
 
             Args:
@@ -224,7 +232,7 @@ class Grid:
                 )  # inner
                 return
 
-            if not self.path:
+            if not self.path:    # non-path fill
                 put_box(
                     data_addr,
                     ll,
@@ -234,9 +242,9 @@ class Grid:
                     self.width - 2 * wall_size,
                     self.height - 2 * wall_size,
                     BLACK,
-                )  # inner
+                )
 
-            if self.path:
+            if self.path:    # path fill
                 put_box(
                     data_addr,
                     ll,
@@ -245,14 +253,21 @@ class Grid:
                     y + wall_size,
                     self.width - 2 * wall_size,
                     self.height - 2 * wall_size,
-                    RED,
-                )  # inner
+                    self.colors[self.path_color_ix],
+                )
 
-            if self.w:
+            if self.w:      # west wall
                 put_box(
-                    data_addr, ll, bpp, x, y, wall_size, self.height, BLUE
-                )  # west
-            if self.e:
+                    data_addr,
+                    ll,
+                    bpp,
+                    x,
+                    y,
+                    wall_size,
+                    self.height,
+                    self.colors[self.wall_color_ix],
+                )
+            if self.e:      # east wall
                 put_box(
                     data_addr,
                     ll,
@@ -261,14 +276,21 @@ class Grid:
                     y,
                     wall_size,
                     self.height,
-                    BLUE,
-                )  # east
+                    self.colors[self.wall_color_ix],
+                )
 
-            if self.n:
+            if self.n:      # north wall
                 put_box(
-                    data_addr, ll, bpp, x, y, self.width, wall_size, BLUE
-                )  # north
-            if self.s:
+                    data_addr,
+                    ll,
+                    bpp,
+                    x,
+                    y,
+                    self.width,
+                    wall_size,
+                    self.colors[self.wall_color_ix],
+                )
+            if self.s:      # south wall
                 put_box(
                     data_addr,
                     ll,
@@ -277,8 +299,8 @@ class Grid:
                     y + self.height - wall_size,
                     self.width,
                     wall_size,
-                    BLUE,
-                )  # south
+                    self.colors[self.wall_color_ix],
+                )
 
             def __hash__(self: "Grid.Cell") -> int:
                 return hash(self.pos)
