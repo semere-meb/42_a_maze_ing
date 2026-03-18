@@ -23,46 +23,7 @@ WIDTH = 800
 HEIGHT = 800
 
 
-def reseed(param):
-    config = param['config']
-    mlx_ptr = param['mlx_ptr']
-    win_ptr = param['win_ptr']
-    data_addr = param['data_addr']
-    line_len = param['line_len']
-    bpp = param['bpp']
-    win_ptr = param['win_ptr']
-    m = param['m']
-    entry = config.entry
-    exit = config.exit
-    grid = param['grid']
-    random.seed(random.randint(1, 1000))
 
-    ps = gen.get_pattern_set(config.height, config.width)
-    grid = gen.generate_grid(
-        config.height,
-        config.width,
-        m,
-        mlx_ptr,
-        win_ptr,
-        config.cell_height,
-        config.cell_width,
-        ps,
-    )
-    gen.wilson_generate(grid, config.entry, config.height, config.width, ps)
-
-    if not config.perfect:
-        gen.break_perfect(grid.adj, ps, config.height)
-
-    cells = grid.adj
-
-    path = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
-    write_to_file(entry, exit, grid, path, config.output_file)
-    for row in cells:
-        for cell in row:
-            cell.render(data_addr, line_len, bpp,
-                        cell.colors[cell.wall_color_ix],
-                        cell.path_colors[cell.path_color_ix],
-                        )
 
 
 def on_keypress(keycode: int, param: dict[str, Any]) -> None:
@@ -118,6 +79,37 @@ def on_keypress(keycode: int, param: dict[str, Any]) -> None:
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 
+def reseed(param):
+    config = param['config']
+    mlx_ptr = param['mlx_ptr']
+    win_ptr = param['win_ptr']
+    data_addr = param['data_addr']
+    line_len = param['line_len']
+    bpp = param['bpp']
+    win_ptr = param['win_ptr']
+    m = param['m']
+    entry = config.entry
+    exit = config.exit
+    grid = param['grid']
+    random.seed(random.randint(1, 1000))
+
+    ps = gen.get_pattern_set(config.height, config.width)
+    gen.clear_grid(grid)
+    gen.wilson_generate(grid, config.entry, config.height, config.width, ps)
+
+    if not config.perfect:
+        gen.break_perfect(grid.adj, ps, config.height)
+
+    cells = grid.adj
+
+    param['path'] = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
+    write_to_file(entry, exit, grid, param['path'], config.output_file)
+    for row in cells:
+        for cell in row:
+            cell.render(data_addr, line_len, bpp,
+                        cell.colors[cell.wall_color_ix],
+                        cell.path_colors[cell.path_color_ix],
+                        )
 
 def main() -> None:
     """Run the full maze generation workflow from CLI config.

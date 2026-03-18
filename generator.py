@@ -429,6 +429,28 @@ def generate_grid(
         out.append(sub)
     return Grid(out, height, width)
 
+def clear_grid(
+    grid,
+) -> None:
+    """Build an all-walls-closed grid and mark pattern cells.
+
+    Args:
+        height: Maze height in cells.
+        width: Maze width in cells.
+        m: MLX instance.
+        mlx_ptr: MLX context pointer.
+        win_ptr: MLX window pointer.
+        cell_height: Cell pixel height.
+        cell_width: Cell pixel width.
+        ps: Coordinates reserved for the closed "42" pattern.
+
+    Returns:
+        A Grid initialized with fresh Cell objects.
+    """
+    for row in grid.adj:
+        for cell in row:
+            cell.n, cell.e, cell.s, cell.w = True, True, True, True
+            cell.path = False
 
 def wilson_generate(
     grid: Grid,
