@@ -71,11 +71,14 @@ def parse_config(url_path: str) -> dict[str, str]:
     try:
         with open(url_path, "r") as f:
             for line in f:
-                key, val = [m.strip() for m in line.lower().split("=")]
+                line = line.strip().lower()
+                if line.startswith('#'):
+                    continue
+                key, val = [m.strip() for m in line.split("=")]
                 config[key] = val
         return config
-    except Exception as e:
-        print(e)
+    except Exception:
+        print("Invalid config")
         sys.exit()
 
 
