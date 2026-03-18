@@ -1,7 +1,7 @@
 VENV = .venv
 
 run: install
-	uv run src/a_maze_ing.py config.txt
+	uv run ./a_maze_ing.py config.txt
 
 install: $(VENV)
 
