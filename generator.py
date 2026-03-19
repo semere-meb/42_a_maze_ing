@@ -429,8 +429,9 @@ def generate_grid(
         out.append(sub)
     return Grid(out, height, width)
 
+
 def clear_grid(
-    grid,
+    grid: Grid,
 ) -> None:
     """Build an all-walls-closed grid and mark pattern cells.
 
@@ -451,6 +452,7 @@ def clear_grid(
         for cell in row:
             cell.n, cell.e, cell.s, cell.w = True, True, True, True
             cell.path = False
+
 
 def wilson_generate(
     grid: Grid,

@@ -23,9 +23,6 @@ WIDTH = 800
 HEIGHT = 800
 
 
-
-
-
 def on_keypress(keycode: int, param: dict[str, Any]) -> None:
     """Handle keyboard events for the rendering window.
 
@@ -48,7 +45,6 @@ def on_keypress(keycode: int, param: dict[str, Any]) -> None:
         os._exit(0)
 
     if keycode == 114:    # R
-        # print("rerender with a new seed")
         for y in range(HEIGHT):
             for x in range(WIDTH):
                 gen.put_pixel(data_addr, line_len, bpp,  x, y, 0x000000)
@@ -79,15 +75,16 @@ def on_keypress(keycode: int, param: dict[str, Any]) -> None:
 
     m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 10, 10)
 
-def reseed(param):
+
+def reseed(param: dict[str, Any]) -> None:
     config = param['config']
-    mlx_ptr = param['mlx_ptr']
-    win_ptr = param['win_ptr']
+    param['mlx_ptr']
+    param['win_ptr']
     data_addr = param['data_addr']
     line_len = param['line_len']
     bpp = param['bpp']
-    win_ptr = param['win_ptr']
-    m = param['m']
+    param['win_ptr']
+    param['m']
     entry = config.entry
     exit = config.exit
     grid = param['grid']
@@ -102,7 +99,9 @@ def reseed(param):
 
     cells = grid.adj
 
-    param['path'] = gen.bfs(grid, cells[entry[0]][entry[1]], cells[exit[0]][exit[1]])
+    param['path'] = gen.bfs(grid,
+                            cells[entry[0]][entry[1]],
+                            cells[exit[0]][exit[1]])
     write_to_file(entry, exit, grid, param['path'], config.output_file)
     for row in cells:
         for cell in row:
@@ -110,6 +109,7 @@ def reseed(param):
                         cell.colors[cell.wall_color_ix],
                         cell.path_colors[cell.path_color_ix],
                         )
+
 
 def main() -> None:
     """Run the full maze generation workflow from CLI config.
@@ -174,7 +174,6 @@ def main() -> None:
                         cell.path_colors[cell.path_color_ix],
                         )
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 20, GREEN, "MENU")
-    # m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 40, GREEN, f"SEED: {seed}")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 60, GREEN, "ESC. Quit")
     m.mlx_string_put(mlx_ptr, win_ptr, 10, HEIGHT + 80, GREEN,
                      "C. Change wall colors")
